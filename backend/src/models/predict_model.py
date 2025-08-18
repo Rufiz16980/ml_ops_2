@@ -1,5 +1,4 @@
 import warnings
-
 warnings.filterwarnings("ignore")
 
 import gzip
@@ -10,67 +9,41 @@ from typing import Iterable, Optional
 
 import pandas as pd
 
-# Root of the repo (two levels up from this file)
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
-
+MODEL_PATH = os.path.join(ROOT_DIR, "models", "multisim_xgb.pkl.gz")
 
 def load_model(filepath: str):
-    """
-    Load a gzip-pickled model from disk.
-    """
     with gzip.open(filepath, "rb") as f:
-        p = pickle.Unpickler(f)
-        clf = p.load()
-    return clf
+        return pickle.load(f)
 
-
-def _load_dataframe_from_bytes(
-    file_content: bytes, filename: Optional[str]
-) -> pd.DataFrame:
-    """
-    Read an uploaded file (bytes) into a DataFrame using file extension.
-    Defaults to Excel if the extension is ambiguous.
-    """
+def _load_dataframe_from_bytes(file_content: bytes, filename: Optional[str]) -> pd.DataFrame:
     name = (filename or "").lower()
     buffer = io.BytesIO(file_content)
 
     if name.endswith(".csv"):
-        df = pd.read_csv(buffer)
+        return pd.read_csv(buffer)
+    elif name.endswith(".parquet"):
+        return pd.read_parquet(buffer)
     elif name.endswith(".xlsx") or name.endswith(".xls"):
-        df = pd.read_excel(buffer)
+        return pd.read_excel(buffer)
     else:
-        # Fall back to Excel; FastAPI already validated extensions, this is just a guard.
-        df = pd.read_excel(buffer)
-    return df
+        raise ValueError("Unsupported file format. Please upload CSV, Parquet, or Excel.")
 
-
-def main(
-    file_content: Optional[bytes] = None, filename: Optional[str] = None
-) -> Iterable:
-    """
-    Accepts raw file bytes and an optional filename to parse CSV/Excel,
-    loads the trained model, and returns predictions.
-    """
-    # Load input features
+def main(file_content: Optional[bytes] = None, filename: Optional[str] = None) -> Iterable:
     if file_content:
         X_test = _load_dataframe_from_bytes(file_content, filename)
     else:
-        # Fallback path for local testing
-        X_test_path = os.path.join(ROOT_DIR, "data", "external", "X_test.xlsx")
-        X_test = pd.read_excel(X_test_path)
+        X_test = pd.read_parquet(os.path.join(ROOT_DIR, "data", "processed", "multisim_dataset_fe3.parquet"))
+        X_test = X_test.drop(columns=["target"]).sample(100)
 
-    # Load model and predict
-    model_path = os.path.join(ROOT_DIR, "models", "titanic_rf.pkl.gz")
-    loaded_model = load_model(model_path)
-    y_pred = loaded_model.predict(X_test)
+    model = load_model(MODEL_PATH)
+    y_pred = model.predict(X_test)
 
     try:
         return y_pred.tolist()
     except TypeError:
         return [p for p in y_pred]
 
-
 if __name__ == "__main__":
-    # Quick manual test (reads default X_test.xlsx)
     preds = main()
     print(f"Generated {len(preds)} predictions")
