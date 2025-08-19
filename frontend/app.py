@@ -57,8 +57,8 @@ if uploaded:
         with st.spinner("Sending file to backend..."):
             files = {"file": (uploaded.name, uploaded.getvalue(), detect_mime(uploaded.name))}
             try:
-                # ✅ Use local backend when running without Docker
-                response = requests.post("http://127.0.0.1:8000/predict", files=files)
+                # ✅ Inside Docker Compose, backend is reached by service name
+                response = requests.post("http://backend:8000/predict", files=files)
 
                 if response.status_code == 200:
                     result_json = response.json()
