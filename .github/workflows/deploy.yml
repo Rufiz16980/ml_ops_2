@@ -10,12 +10,24 @@ concurrency:
 
 jobs:
   lint-and-deploy:
-    runs-on: [self-hosted, ec2, mlops2]   # matches the labels you set in config.sh
+    runs-on: [self-hosted, ec2, mlops2]
     timeout-minutes: 30
 
     steps:
+      # --- NEW: remove root-owned leftovers from previous runs ---
+      - name: Hard clean workspace (fix root-owned files)
+        run: |
+          echo "Cleaning $GITHUB_WORKSPACE"
+          sudo rm -rf "$GITHUB_WORKSPACE"/* || true
+          sudo rm -rf "$GITHUB_WORKSPACE"/.[!.]* || true
+          sudo rm -rf "$GITHUB_WORKSPACE"/..?* || true
+
+      # Checkout WITHOUT internal cleaning to avoid EACCES
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          clean: false
 
       - name: Set up Python 3.12 for linting
         uses: actions/setup-python@v5
@@ -41,3 +53,6 @@ jobs:
           docker compose build --pull
           docker compose up -d
           docker compose ps
+
+      - name: Prune dangling images (optional)
+        run: docker image prune -f || true
