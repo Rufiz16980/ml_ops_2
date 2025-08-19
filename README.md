@@ -96,3 +96,63 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](https:
 *This is a educational example project demonstrating MLOps best practices. For production use, consider additional security, monitoring, and scalability measures.*
 
 **Made with ❤️ for DataMinds'25 students**
+
+
+# ML Ops Project HW 2 Continue
+
+End-to-end ML service with **FastAPI** (backend) + **Streamlit** (frontend), containerized with **Docker** and deployed on **AWS EC2** via a GitHub Actions **self-hosted runner**.  
+
+---
+
+## Live Deployment  
+
+- **Frontend (Streamlit):** [http://44.219.51.68:8501](http://44.219.51.68:8501)  
+- **Backend (FastAPI Docs):** [http://44.219.51.68:8000/docs](http://44.219.51.68:8000/docs)  
+
+---
+
+## Features  
+
+- **Backend (FastAPI)**  
+  - `/health` endpoint → returns service status.  
+  - `/predict` endpoint → accepts uploaded CSV/Excel files, returns predictions.  
+
+- **Frontend (Streamlit)**  
+  - Drag-and-drop UI for uploading CSV/Excel files.  
+  - Shows file preview, calls backend for predictions, displays results.  
+
+- **DevOps**  
+  - Docker Compose orchestrates backend + frontend.  
+  - GitHub Actions with linting + deploy jobs.  
+  - Self-hosted runner on EC2 for CI/CD automation.  
+
+---
+
+## Setup  
+
+### Local (with Docker Compose)  
+```bash
+docker compose up -d --build
+
+docker ps --format "table {{.Names}}\t{{.Ports}}"
+
+EC2 Deployment (via GitHub Actions runner)
+
+Every push to main triggers the deploy workflow and restarts containers on the EC2 instance.
+Backend → http://44.219.51.68:8000/docs
+Frontend → http://44.219.51.68:8501
+
+## Screenshots
+
+### Backend Swagger (`/docs`)
+Here is the automatically generated API documentation from FastAPI:
+
+![Backend Swagger](backend/assets/fast_api.png)
+
+---
+
+### Frontend Streamlit
+The Streamlit app allows the user to send inputs and view predictions interactively:
+
+![Frontend Streamlit](frontend/assets/streamlit.png)
+
