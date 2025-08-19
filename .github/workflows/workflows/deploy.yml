@@ -1,0 +1,43 @@
+name: CI/CD (EC2 self-hosted)
+
+on:
+  push:
+    branches: [ main ]
+
+concurrency:
+  group: deploy-ec2
+  cancel-in-progress: true
+
+jobs:
+  lint-and-deploy:
+    runs-on: [self-hosted, ec2, mlops2]   # matches the labels you set in config.sh
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12 for linting
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Lint (backend & frontend)
+        run: |
+          ruff --version
+          ruff check backend frontend
+
+      - name: Docker info
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Deploy with Docker Compose
+        run: |
+          docker compose down --remove-orphans
+          docker compose build --pull
+          docker compose up -d
+          docker compose ps
