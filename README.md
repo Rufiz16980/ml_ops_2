@@ -138,6 +138,8 @@ docker ps --format "table {{.Names}}\t{{.Ports}}"
 
 EC2 Deployment (via GitHub Actions runner)
 
+```
+
 Every push to main triggers the deploy workflow and restarts containers on the EC2 instance.
 Backend → http://44.219.51.68:8000/docs
 Frontend → http://44.219.51.68:8501
