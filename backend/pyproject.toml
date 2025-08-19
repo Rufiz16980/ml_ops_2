@@ -13,12 +13,10 @@ dependencies = [
     "scikit-learn>=1.7.1",
     "uvicorn>=0.35.0",
     "joblib>=1.4.2",
-    "xgboost>=2.1.1"
+    "xgboost>=2.1.1",
+    "category-encoders>=2.6.3",
+    "pyarrow>=16.0.0"
 ]
-
-
-# [tool.ruff]
-# lint.extend-select = ["ALL"]
 
 [tool.ruff.lint]
 ignore = ["E402"]
@@ -28,6 +26,6 @@ line-length = 100
 extend-exclude = '^(data|reports|models|notebooks)/'
 
 [tool.isort]
-profile = "black" # keeps isort compatible with Black
+profile = "black"
 line_length = 100
 skip_glob = ["data/**", "reports/**", "models/**", "notebooks/**"]
