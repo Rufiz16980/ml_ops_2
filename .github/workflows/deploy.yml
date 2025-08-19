@@ -11,10 +11,10 @@ concurrency:
 jobs:
   lint-and-deploy:
     runs-on: [self-hosted, ec2, mlops2]
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
-      # --- NEW: remove root-owned leftovers from previous runs ---
+      # Clean root-owned leftovers written by containers into the bind mounts
       - name: Hard clean workspace (fix root-owned files)
         run: |
           echo "Cleaning $GITHUB_WORKSPACE"
@@ -22,7 +22,6 @@ jobs:
           sudo rm -rf "$GITHUB_WORKSPACE"/.[!.]* || true
           sudo rm -rf "$GITHUB_WORKSPACE"/..?* || true
 
-      # Checkout WITHOUT internal cleaning to avoid EACCES
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
@@ -47,12 +46,18 @@ jobs:
           docker --version
           docker compose version
 
+      # >>> NEW: free disk BEFORE building images (prevents Errno 28)
+      - name: Pre-build cleanup (free disk)
+        run: |
+          docker system prune -af --volumes || true
+          docker builder prune -af || true
+
       - name: Deploy with Docker Compose
         run: |
-          docker compose down --remove-orphans
+          docker compose down --remove-orphans || true
           docker compose build --pull
           docker compose up -d
           docker compose ps
 
-      - name: Prune dangling images (optional)
+      - name: Prune dangling images (post-deploy)
         run: docker image prune -f || true
