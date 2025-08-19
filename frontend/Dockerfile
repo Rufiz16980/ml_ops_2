@@ -10,8 +10,8 @@ RUN apt-get update -y && \
 # Copy frontend code
 COPY frontend/ .
 
-# Install deps
-RUN pip install --no-cache-dir -r requirements.txt
+# Install deps from pyproject.toml
+RUN pip install --no-cache-dir .
 
 EXPOSE 8501
 

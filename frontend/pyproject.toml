@@ -6,9 +6,13 @@ readme = "README.md"
 requires-python = ">= 3.12"
 authors = [{ name = "Elkhn", email = "elxana@azercell.com" }]
 dependencies = [
-    "openpyxl>=3.1.5",
-    "pandas>=2.3.1",
-    "streamlit>=1.48.1",
+    "openpyxl>=3.1.5",       
+    "pandas>=2.3.1",         
+    "numpy>=1.26.0",         
+    "streamlit>=1.48.1",     
+    "requests>=2.31.0",      
+    "matplotlib>=3.9.0",     
+    "plotly>=5.22.0",        
 ]
 
 # [tool.ruff]
